@@ -197,7 +197,7 @@ const Contact = () => {
       message: formData.message.trim(),
     };
 
-    const response = await fetch('https://my-ai-agent-client.onrender.com/api/contact', {
+    const response = await fetch('http://localhost:8000/api/contact', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
