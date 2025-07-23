@@ -117,103 +117,35 @@ const Contact = () => {
     return null;
   };
 
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-
-  //   const validationError = validateForm();
-  //   if (validationError) {
-  //     toast.error(validationError);
-  //     return;
-  //   }
-
-  //   setIsSubmitting(true);
-  //   setLastSubmissionTime(Date.now());
-
-  //   const loadingToast = toast.loading('Sending your message...');
-
-  //   try {
-  //     const payload = {
-  //       name: formData.name.trim(),
-  //       email: formData.email.trim(),
-  //       message: formData.message.trim(),
-  //     };
-
-  //     const response = await fetch('https://my-ai-agent-client.onrender.com/api/contact', {
-  //       method: 'POST',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify(payload),
-  //       signal: AbortSignal.timeout(10000),
-  //     });
-
-  //     const responseBody = await response.text();
-  //     if (!response.ok) {
-  //       let errorData;
-  //       try {
-  //         errorData = JSON.parse(responseBody);
-  //       } catch {
-  //         errorData = { detail: responseBody || 'Failed to send message' };
-  //       }
-  //       throw new Error(errorData.detail || 'Failed to send message');
-  //     }
-
-  //     const data = JSON.parse(responseBody || '{}');
-  //     toast.success(data.message || 'Thank you for your message! Muhammad Ahmad will get back to you soon.', {
-  //       duration: 5000,
-  //     });
-
-  //     setFormData({ name: '', email: '', message: '' });
-  //     localStorage.removeItem('contact_form_data');
-  //   } catch (error: any) {
-  //     toast.error(
-  //       error.message || 'Failed to send message. Please try again or contact via WhatsApp/Email.',
-  //       {
-  //         duration: 6000,
-  //       }
-  //     );
-  //   } finally {
-  //     setIsSubmitting(false);
-  //     toast.dismiss(loadingToast);
-  //   }
-  // };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     const validationError = validateForm();
     if (validationError) {
       toast.error(validationError);
       return;
     }
-  
+
     setIsSubmitting(true);
     setLastSubmissionTime(Date.now());
-  
+
     const loadingToast = toast.loading('Sending your message...');
-  
+
     try {
       const payload = {
         name: formData.name.trim(),
         email: formData.email.trim(),
         message: formData.message.trim(),
       };
-  
-      console.log('Sending contact request:', payload); // Debugging
-  
-      const response = await fetch('http://localhost:8000/api/contact', {
+
+      const response = await fetch('https://my-ai-agent-client.onrender.com/api/contact', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Origin': 'https://m-ahmad-portfolio-dev.netlify.app', // Explicitly set Origin
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-        credentials: 'include', // Include credentials for CORS
         signal: AbortSignal.timeout(10000),
       });
-  
-      console.log('Response status:', response.status); // Debugging
+
       const responseBody = await response.text();
-      console.log('Response body:', responseBody); // Debugging
-  
       if (!response.ok) {
         let errorData;
         try {
@@ -223,25 +155,28 @@ const Contact = () => {
         }
         throw new Error(errorData.detail || 'Failed to send message');
       }
-  
+
       const data = JSON.parse(responseBody || '{}');
       toast.success(data.message || 'Thank you for your message! Muhammad Ahmad will get back to you soon.', {
         duration: 5000,
       });
-  
+
       setFormData({ name: '', email: '', message: '' });
       localStorage.removeItem('contact_form_data');
     } catch (error: any) {
-      console.error('Contact form error:', error);
       toast.error(
-        `Failed to send message: ${error.message}. Please try again or contact Muhammad directly at Ahmadrajpootr1@gmail.com or +923314815161.`,
-        { duration: 6000 }
+        error.message || 'Failed to send message. Please try again or contact via WhatsApp/Email.',
+        {
+          duration: 6000,
+        }
       );
     } finally {
       setIsSubmitting(false);
       toast.dismiss(loadingToast);
     }
   };
+
+  
 
   const handleSocialClick = (url: string, label: string) => {
     window.open(url, '_blank', 'noopener,noreferrer');
