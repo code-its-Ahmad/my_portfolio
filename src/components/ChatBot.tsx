@@ -201,7 +201,7 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
       : [
           {
             id: uuidv4(),
-            text: "Hello! I'm Muhammad Ahmad's AI assistant. I'm here to help you connect with a Full Stack Developer and AI/ML expert. Are you reaching out as a company looking to hire or an individual with a project idea? You can also contact Muhammad directly at +923314815161.",
+            text: "Hello! I'm Muhammad Ahmad's AI assistant. I'm here to help you connect with a Full Stack Developer and AI/ML expert. Are you reaching out as a company looking to hire or an individual with a project idea?",
             isUser: false,
             timestamp: new Date(),
           },
