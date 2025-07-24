@@ -408,8 +408,8 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
       }
 
       return details.clientType === 'company'
-        ? 'Your hiring request has been successfully submitted! Muhammad Ahmad will contact you soon at your provided email. You can also reach him at +923314815161.'
-        : 'Your project request has been successfully submitted! Muhammad Ahmad will contact you soon at your provided email. You can also reach him at +923314815161.';
+        ? 'Your hiring request has been successfully submitted! Muhammad Ahmad will contact you soon at your provided email. '
+        : 'Your project request has been successfully submitted! Muhammad Ahmad will contact you soon at your provided email. ';
     } catch (error) {
       console.error('Error sending details:', error);
       setError('Failed to submit your request. Please try again or contact Muhammad directly.');
@@ -570,7 +570,7 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
       setMessages([
         {
           id: uuidv4(),
-          text: "Hello! I'm Muhammad Ahmad's AI assistant. I'm here to help you connect with a Full Stack Developer and AI/ML expert. Are you reaching out as a company looking to hire or an individual with a project idea? You can also contact Muhammad directly at +923314815161.",
+          text: "Hello! I'm Muhammad Ahmad's AI assistant. I'm here to help you connect with a Full Stack Developer and AI/ML expert. Are you reaching out as a company looking to hire or an individual with a project idea? ",
           isUser: false,
           timestamp: new Date(),
         },
