@@ -116,7 +116,7 @@ const Contact = () => {
     }
     return null;
   };
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
@@ -138,7 +138,7 @@ const Contact = () => {
       message: formData.message.trim(),
     };
 
-    const response = await fetch('http://localhost:8000/api/contact', {
+    const response = await fetch('https://portfolio-backend-aeu8.onrender.com/api/contact', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -179,6 +179,11 @@ const Contact = () => {
     toast.dismiss(loadingToast);
   }
 };
+
+  
+
+  
+
   const handleSocialClick = (url: string, label: string) => {
     window.open(url, '_blank', 'noopener,noreferrer');
     toast.success(`Opening ${label} to connect with Muhammad Ahmad`, {
