@@ -93,26 +93,26 @@ const shimmerVariants: Variants = {
   },
 };
 
-// Avatar Model Component
 const AvatarModel = ({ isSpeaking, theme }: { isSpeaking: boolean; theme: 'light' | 'dark' }) => {
   const groupRef = useRef<THREE.Group>(null);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
   const { scene, animations } = useGLTF('/avator.glb', true);
-
+  
   useEffect(() => {
     try {
       if (!scene) {
         console.warn('GLTF model failed to load, using fallback geometry');
         const fallbackGeometry = new THREE.BoxGeometry(1, 1, 1);
-        const fallbackMaterial = new THREE.MeshStandardMaterial({
+        const fallbackMaterial = new THREE.MeshStandardMaterial({ 
           color: theme === 'dark' ? 0x808080 : 0xaaaaaa,
           metalness: 0.3,
-          roughness: 0.4,
+          roughness: 0.4
         });
         const fallbackMesh = new THREE.Mesh(fallbackGeometry, fallbackMaterial);
         groupRef.current?.add(fallbackMesh);
         return;
       }
+
       if (animations?.length > 0) {
         mixerRef.current = new THREE.AnimationMixer(scene);
         const action = mixerRef.current.clipAction(animations[0]);
@@ -131,6 +131,7 @@ const AvatarModel = ({ isSpeaking, theme }: { isSpeaking: boolean; theme: 'light
         };
         animate();
       }
+
       return () => {
         if (mixerRef.current) {
           mixerRef.current.stopAllAction();
@@ -246,26 +247,26 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
   }, []);
 
   // Load speech synthesis voices
-  useEffect(() => {
-    const loadVoices = () => {
-      try {
-        const voices = window.speechSynthesis.getVoices();
-        if (voices.length > 0) {
-          setVoicesLoaded(true);
-        } else {
-          setError('Speech synthesis voices not available. Some features may be limited.');
-        }
-      } catch (error) {
-        console.error('Error loading voices:', error);
-        setError('Speech synthesis is not supported on this device.');
-      }
-    };
-    loadVoices();
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-    return () => {
-      window.speechSynthesis.onvoiceschanged = null;
-    };
-  }, []);
+  // useEffect(() => {
+  //   const loadVoices = () => {
+  //     try {
+  //       const voices = window.speechSynthesis.getVoices();
+  //       if (voices.length > 0) {
+  //         setVoicesLoaded(true);
+  //       } else {
+  //         console.error('Error loading voices:', error);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error loading voices:', error);
+  //       setError('Speech synthesis is not supported on this device.');
+  //     }
+  //   };
+  //   loadVoices();
+  //   window.speechSynthesis.onvoiceschanged = loadVoices;
+  //   return () => {
+  //     window.speechSynthesis.onvoiceschanged = null;
+  //   };
+  // }, []);
 
   // Handle canvas resizing
   useEffect(() => {
