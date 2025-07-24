@@ -388,8 +388,8 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
           };
       
       const endpoint = details.clientType === 'company'
-        ? 'https://my-ai-agent-client.onrender.com/api/hiring-request'
-        : 'https://my-ai-agent-client.onrender.com/api/project-request';
+        ? 'https://portfolio-backend-aeu8.onrender.com/api/hiring-request'
+        : 'https://portfolio-backend-aeu8.onrender.com/api/project-request';
       
       const response = await fetch(endpoint, {
         method: 'POST',
