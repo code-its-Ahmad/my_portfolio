@@ -849,9 +849,8 @@
 
 // export default memo(ChatBot);
 
-
 import { useState, useRef, useEffect, memo, Suspense } from 'react';
-import { MessageCircle, Send, X, User, Bot, RefreshCw, Phone, Mail } from 'lucide-react';
+import { MessageCircle, Send, X, User, Bot, RefreshCw, Phone, Mail, Pause, Play } from 'lucide-react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Preload, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
@@ -908,62 +907,46 @@ const containerVariants: Variants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { type: 'spring', stiffness: 100, damping: 20 },
+    transition: { type: 'spring', stiffness: 120, damping: 20 },
   },
-  exit: { opacity: 0, y: '100vh', transition: { duration: 0.3 } },
+  exit: { opacity: 0, y: '100vh', transition: { duration: 0.4 } },
 };
 
 const messageVariants: Variants = {
   initial: { opacity: 0, y: 20, scale: 0.95 },
-  animate: { 
-    opacity: 1, 
-    y: 0, 
-    scale: 1, 
-    transition: { 
-      duration: 0.3,
-      type: "spring",
-      stiffness: 100
-    } 
+  animate: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.3, type: 'spring', stiffness: 120 },
   },
 };
 
 const buttonVariants: Variants = {
-  hover: { 
-    scale: 1.1, 
-    rotate: 5,
-    transition: { duration: 0.2 }
-  },
-  tap: { 
-    scale: 0.9,
-    transition: { duration: 0.1 }
-  },
+  hover: { scale: 1.1, rotate: 5, transition: { duration: 0.2 } },
+  tap: { scale: 0.95, transition: { duration: 0.1 } },
 };
 
 const avatarVariants: Variants = {
-  idle: { 
-    rotateY: 0,
-    transition: { duration: 2, ease: "easeInOut" }
-  },
-  speaking: { 
-    rotateY: Math.PI * 0.1,
-    transition: { duration: 0.5, ease: "easeInOut" }
-  }
+  idle: { rotateY: 0, transition: { duration: 2, ease: 'easeInOut' } },
+  speaking: { rotateY: Math.PI * 0.1, transition: { duration: 0.5, ease: 'easeInOut' } },
 };
 
+// Avatar Model Component
 const AvatarModel = ({ isSpeaking, theme }: { isSpeaking: boolean; theme: 'light' | 'dark' }) => {
   const groupRef = useRef<THREE.Group>(null);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
   const { scene, animations } = useGLTF('/avator.glb', true);
-  
+
   useEffect(() => {
     try {
       if (!scene) {
         console.warn('GLTF model failed to load, using fallback geometry');
         const fallbackGeometry = new THREE.BoxGeometry(1, 1, 1);
-        const fallbackMaterial = new THREE.MeshStandardMaterial({ 
+        const fallbackMaterial = new THREE.MeshStandardMaterial({
           color: theme === 'dark' ? 0x808080 : 0xaaaaaa,
           metalness: 0.3,
-          roughness: 0.4
+          roughness: 0.4,
         });
         const fallbackMesh = new THREE.Mesh(fallbackGeometry, fallbackMaterial);
         groupRef.current?.add(fallbackMesh);
@@ -997,7 +980,7 @@ const AvatarModel = ({ isSpeaking, theme }: { isSpeaking: boolean; theme: 'light
       console.error('Error initializing avatar:', error);
     }
   }, [scene, animations, theme]);
-  
+
   useFrame((_, delta) => {
     try {
       if (mixerRef.current && isSpeaking) {
@@ -1007,42 +990,44 @@ const AvatarModel = ({ isSpeaking, theme }: { isSpeaking: boolean; theme: 'light
       console.error('Error updating animation:', error);
     }
   });
-  
+
   return (
-    <group 
-      ref={groupRef} 
-      scale={[1.5, 1.5, 1.5]} 
+    <motion.group
+      ref={groupRef}
+      scale={[1.5, 1.5, 1.5]}
       position={[0, -1.3, 0]}
       variants={avatarVariants}
-      animate={isSpeaking ? "speaking" : "idle"}
+      animate={isSpeaking ? 'speaking' : 'idle'}
     >
       <primitive object={scene} />
-    </group>
+    </motion.group>
   );
 };
 
+// Loading Fallback Component
 const LoadingFallback = ({ theme }: { theme: 'light' | 'dark' }) => (
   <group>
     <mesh rotation={[0, Math.PI / 4, 0]}>
       <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial 
-        color={theme === 'dark' ? 'gray' : 'lightgray'} 
-        metalness={0.3} 
-        roughness={0.4} 
+      <meshStandardMaterial
+        color={theme === 'dark' ? 'gray' : 'lightgray'}
+        metalness={0.3}
+        roughness={0.4}
       />
     </mesh>
     <pointLight position={[0, 0, 2]} intensity={1} color={theme === 'dark' ? '#0066ff' : '#4b9bff'} />
   </group>
 );
 
+// Main ChatBot Component
 const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
-  const { theme: contextTheme } = useTheme(); // Fallback to context if propTheme is undefined
-  const theme = propTheme || contextTheme; // Use propTheme if provided, else contextTheme
+  const { theme: contextTheme } = useTheme();
+  const theme = propTheme || contextTheme;
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: uuidv4(),
-      text: "Hello! I'm Muhammad Ahmad's AI assistant. I'm here to help you connect with a Full Stack Developer and AI/ML expert. Are you reaching out as a company looking to hire or an individual with a project idea? You can also contact Muhammad directly at +923314815161.",
+      text: "Hello! I'm Muhammad Ahmad's AI assistant. It's 03:08 PM PKT, Thursday, July 24, 2025. I'm here to help you connect with a Full Stack Developer and AI/ML expert. Are you reaching out as a company looking to hire or an individual with a project idea? You can also contact Muhammad directly at +923314815161.",
       isUser: false,
       timestamp: new Date(),
     },
@@ -1050,29 +1035,29 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isSpeechPaused, setIsSpeechPaused] = useState(false);
   const [voicesLoaded, setVoicesLoaded] = useState(false);
   const [conversationState, setConversationState] = useState<ConversationState>('greeting');
   const [projectDetails, setProjectDetails] = useState<ProjectDetails>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const speechQueueRef = useRef<SpeechQueueItem[]>([]);
   const isSpeakingRef = useRef(false);
   const hasSpokenFirstMessage = useRef(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  
+
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      setIsMobile(window.innerWidth < 640); // Adjusted to 640px for better mobile detection
     };
-    
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-  
+
   useEffect(() => {
     const loadVoices = () => {
       try {
@@ -1086,12 +1071,11 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
     };
     loadVoices();
     window.speechSynthesis.onvoiceschanged = loadVoices;
-    
     return () => {
       window.speechSynthesis.onvoiceschanged = null;
     };
   }, []);
-  
+
   useEffect(() => {
     const handleResize = () => {
       if (canvasRef.current) {
@@ -1106,7 +1090,7 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-  
+
   useEffect(() => {
     if (isOpen && voicesLoaded && !hasSpokenFirstMessage.current) {
       const initialMessage = messages[0].text;
@@ -1114,24 +1098,24 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
       processSpeechQueue();
       hasSpokenFirstMessage.current = true;
     }
-    
     scrollToBottom();
     if (isOpen && inputRef.current) {
       inputRef.current.focus();
     }
   }, [isOpen, voicesLoaded]);
-  
+
   useEffect(() => {
     if (!isOpen) {
       resetChat();
     }
   }, [isOpen]);
-  
+
   const resetChat = () => {
     try {
       hasSpokenFirstMessage.current = false;
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
+      setIsSpeechPaused(false);
       isSpeakingRef.current = false;
       speechQueueRef.current = [];
       setConversationState('greeting');
@@ -1139,7 +1123,7 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
       setMessages([
         {
           id: uuidv4(),
-          text: "Hello! I'm Muhammad Ahmad's AI assistant. I'm here to help you connect with a Full Stack Developer and AI/ML expert. Are you reaching out as a company looking to hire or an individual with a project idea? You can also contact Muhammad directly at +923314815161.",
+          text: "Hello! I'm Muhammad Ahmad's AI assistant. It's 03:08 PM PKT, Thursday, July 24, 2025. I'm here to help you connect with a Full Stack Developer and AI/ML expert. Are you reaching out as a company looking to hire or an individual with a project idea? You can also contact Muhammad directly at +923314815161.",
           isUser: false,
           timestamp: new Date(),
         },
@@ -1148,7 +1132,7 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
       console.error('Error resetting chat state:', error);
     }
   };
-  
+
   const scrollToBottom = () => {
     try {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -1156,39 +1140,40 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
       console.error('Error scrolling to bottom:', error);
     }
   };
-  
+
   const speakMessage = (text: string, isUser: boolean, onEnd: () => void) => {
     try {
+      if (isSpeechPaused) return;
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'en-US';
       utterance.pitch = isUser ? 1.0 : 1.1;
       utterance.rate = 0.95;
       utterance.volume = 0.9;
-      
+
       const voices = window.speechSynthesis.getVoices();
       const preferredVoice = voices.find(
         (voice) => voice.name.includes('Google US English') || voice.name.includes('Samantha') || voice.name.includes('Victoria')
       ) || voices[0];
-      
+
       utterance.voice = preferredVoice;
-      
+
       setIsSpeaking(true);
       isSpeakingRef.current = true;
-      
+
       utterance.onend = () => {
         setIsSpeaking(false);
         isSpeakingRef.current = false;
         onEnd();
       };
-      
+
       utterance.onerror = (event) => {
         console.error('Speech synthesis error:', event.error);
         setIsSpeaking(false);
         isSpeakingRef.current = false;
         onEnd();
       };
-      
+
       window.speechSynthesis.speak(utterance);
     } catch (error) {
       console.error('Error speaking message:', error);
@@ -1197,24 +1182,34 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
       onEnd();
     }
   };
-  
+
   const processSpeechQueue = () => {
-    if (speechQueueRef.current.length === 0 || isSpeakingRef.current) return;
-    
+    if (speechQueueRef.current.length === 0 || isSpeakingRef.current || isSpeechPaused) return;
+
     const nextItem = speechQueueRef.current.shift();
     if (nextItem) {
       speakMessage(nextItem.text, nextItem.isUser, processSpeechQueue);
     }
   };
-  
+
+  const toggleSpeech = () => {
+    if (isSpeechPaused) {
+      setIsSpeechPaused(false);
+      processSpeechQueue();
+    } else {
+      window.speechSynthesis.pause();
+      setIsSpeechPaused(true);
+    }
+  };
+
   const sendDetailsToDeveloper = async (details: ProjectDetails): Promise<string> => {
     try {
       setIsSubmitting(true);
-      
+
       if (!details.contactEmail || !isValidEmail(details.contactEmail)) {
         return 'Please provide a valid contact email (e.g., example@domain.com).';
       }
-      
+
       const payload = details.clientType === 'company'
         ? {
             clientType: 'company',
@@ -1234,22 +1229,22 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
             requirements: details.requirements!.trim(),
             contactEmail: details.contactEmail!.trim(),
           };
-      
+
       const endpoint = details.clientType === 'company'
         ? 'https://portfolio-backend-aeu8.onrender.com/api/hiring-request'
         : 'https://portfolio-backend-aeu8.onrender.com/api/project-request';
-      
+
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || 'Failed to submit request');
       }
-      
+
       return details.clientType === 'company'
         ? 'Your hiring request has been successfully submitted! Muhammad Ahmad will contact you soon at your provided email. You can also reach him at +923314815161.'
         : 'Your project request has been successfully submitted! Muhammad Ahmad will contact you soon at your provided email. You can also reach him at +923314815161.';
@@ -1260,21 +1255,21 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
       setIsSubmitting(false);
     }
   };
-  
+
   const isValidEmail = (email: string): boolean => {
     return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
   };
-  
+
   const getAIResponse = (userMessage: string): { response: string; nextState: ConversationState } => {
     const message = userMessage.toLowerCase().trim();
-    
+
     if (!message) {
       return {
         response: 'Please provide some details to proceed. Are you a company or an individual? Contact Muhammad at +923314815161.',
         nextState: conversationState,
       };
     }
-    
+
     switch (conversationState) {
       case 'greeting':
       case 'collecting_client_type':
@@ -1284,49 +1279,49 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
         }
         setProjectDetails((prev) => ({ ...prev, clientType: 'individual' }));
         return { response: 'Nice to connect! What\'s your name?', nextState: 'collecting_name' };
-        
+
       case 'collecting_company_name':
         if (userMessage.trim().length < 2) {
           return { response: 'Please provide a valid company name.', nextState: 'collecting_company_name' };
         }
         setProjectDetails((prev) => ({ ...prev, companyName: userMessage }));
         return { response: `Thanks, ${userMessage}! What's the position title?`, nextState: 'collecting_position_title' };
-        
+
       case 'collecting_name':
         if (userMessage.trim().length < 2) {
           return { response: 'Please provide a valid name.', nextState: 'collecting_name' };
         }
         setProjectDetails((prev) => ({ ...prev, clientName: userMessage }));
         return { response: `Hi, ${userMessage}! What type of project are you planning?`, nextState: 'collecting_project_type' };
-        
+
       case 'collecting_position_title':
         if (userMessage.trim().length < 3) {
           return { response: 'Please provide a valid position title.', nextState: 'collecting_position_title' };
         }
         setProjectDetails((prev) => ({ ...prev, positionTitle: userMessage }));
         return { response: `A ${userMessage} role sounds great! What's your budget?`, nextState: 'collecting_budget' };
-        
+
       case 'collecting_project_type':
         if (userMessage.trim().length < 3) {
           return { response: 'Please provide a valid project type.', nextState: 'collecting_project_type' };
         }
         setProjectDetails((prev) => ({ ...prev, projectType: userMessage }));
         return { response: `A ${userMessage} project sounds exciting! What's your budget?`, nextState: 'collecting_budget' };
-        
+
       case 'collecting_budget':
         if (!/^\$?[0-9,]+(\.[0-9]{1,2})?$/.test(userMessage)) {
           return { response: 'Please provide a valid budget (e.g., $1,000 or 1000).', nextState: 'collecting_budget' };
         }
         setProjectDetails((prev) => ({ ...prev, budget: userMessage }));
         return { response: 'Thanks! What\'s the timeline for this?', nextState: 'collecting_timeline' };
-        
+
       case 'collecting_timeline':
         if (userMessage.trim().length < 3) {
           return { response: 'Please provide a valid timeline (e.g., 1 month).', nextState: 'collecting_timeline' };
         }
         setProjectDetails((prev) => ({ ...prev, timeline: userMessage }));
         return { response: 'Got it! What are the specific requirements?', nextState: 'collecting_requirements' };
-        
+
       case 'collecting_requirements':
         if (userMessage.trim().length < 10) {
           return { response: 'Please provide detailed requirements (at least 10 characters).', nextState: 'collecting_requirements' };
@@ -1336,7 +1331,7 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
           response: 'Thanks for the details! Please provide your contact email.',
           nextState: 'collecting_contact',
         };
-        
+
       case 'collecting_contact':
         if (!isValidEmail(userMessage)) {
           return { response: 'Please provide a valid email.', nextState: 'collecting_contact' };
@@ -1351,13 +1346,13 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
           response: 'Submitting your request... Anything else you\'d like to add?',
           nextState: 'connecting',
         };
-        
+
       case 'connecting':
         return {
           response: 'Your request is submitted! Contact Muhammad at Ahmadrajpootr1@gmail.com or +923314815161 if needed. Want to start a new conversation?',
           nextState: 'greeting',
         };
-        
+
       default:
         return {
           response: 'Are you a company looking to hire or an individual with a project idea? Contact Muhammad at +923314815161.',
@@ -1365,10 +1360,10 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
         };
     }
   };
-  
+
   const handleSendMessage = async () => {
     if (!inputText.trim() || isSubmitting) return;
-    
+
     try {
       const userMessage: Message = {
         id: uuidv4(),
@@ -1376,13 +1371,13 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
         isUser: true,
         timestamp: new Date(),
       };
-      
+
       setMessages((prev) => [...prev, userMessage]);
       speechQueueRef.current.push({ text: inputText, isUser: true });
       setInputText('');
       setIsTyping(true);
       processSpeechQueue();
-      
+
       setTimeout(() => {
         const { response, nextState } = getAIResponse(inputText);
         setMessages((prev) => [...prev, { id: uuidv4(), text: response, isUser: false, timestamp: new Date() }]);
@@ -1391,7 +1386,6 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
         setIsTyping(false);
         processSpeechQueue();
       }, 1000 + Math.random() * 500);
-      
     } catch (error) {
       console.error('Error handling message:', error);
       const errorMessage = 'An error occurred. Please try again or contact Muhammad directly at Ahmadrajpootr1@gmail.com or +923314815161.';
@@ -1401,22 +1395,22 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
       processSpeechQueue();
     }
   };
-  
+
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey && !isSubmitting) {
       e.preventDefault();
       handleSendMessage();
     }
   };
-  
+
   const handleRestartConversation = () => {
     resetChat();
   };
-  
+
   const handleContact = () => {
     window.open('mailto:Ahmadrajpootr1@gmail.com', '_blank');
   };
-  
+
   return (
     <>
       <motion.button
@@ -1425,12 +1419,12 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
         whileHover="hover"
         whileTap="tap"
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-4 right-4 z-50 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 dark:from-blue-600 dark:to-purple-700 dark:hover:from-blue-700 dark:hover:to-purple-800 text-white dark:text-gray-100 p-3 rounded-full shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 md:p-4 animate-glow`}
+        className="fixed bottom-4 right-4 z-50 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-700 dark:to-purple-800 text-white p-3 sm:p-4 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 animate-glow"
         aria-label={isOpen ? 'Close chat' : 'Open chat'}
       >
         {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
       </motion.button>
-      
+
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -1438,22 +1432,22 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="fixed bottom-16 right-2 z-40 w-[calc(100%-16px)] max-w-[1200px] bg-transparent p-2 sm:p-4 flex flex-col md:flex-row gap-4 mx-auto"
+            className="fixed bottom-16 right-2 z-40 w-[calc(100%-16px)] max-w-[1280px] mx-auto p-2 sm:p-4 flex flex-col md:flex-row gap-2 sm:gap-4 bg-transparent"
             role="dialog"
             aria-label="Chatbot interface"
             aria-live="polite"
           >
-            <div className="w-full md:w-1/2 h-[200px] xs:h-[250px] sm:h-[350px] md:h-[500px] rounded-xl shadow-2xl overflow-hidden bg-gray-100/50 dark:bg-gray-900/50">
+            <div className="w-full md:w-1/2 h-[200px] sm:h-[300px] md:h-[500px] rounded-xl shadow-2xl overflow-hidden bg-gray-100/70 dark:bg-gray-900/70">
               <Canvas
                 ref={canvasRef}
-                camera={{ position: [0, 0, 4], fov: 45 }}
+                camera={{ position: [0, 0, 4], fov: isMobile ? 50 : 45 }}
                 gl={{ antialias: true, powerPreference: 'low-power' }}
                 className="w-full h-full"
               >
-                <ambientLight intensity={theme === 'dark' ? 0.6 : 0.8} />
-                <directionalLight position={[5, 5, 5]} intensity={theme === 'dark' ? 1.2 : 1.5} castShadow />
-                <pointLight position={[-2, 2, 2]} intensity={0.9} color={theme === 'dark' ? '#0066ff' : '#4b9bff'} />
-                <pointLight position={[2, 2, 2]} intensity={0.9} color={theme === 'dark' ? '#6600ff' : '#8b5cf6'} />
+                <ambientLight intensity={theme === 'dark' ? 0.7 : 0.9} />
+                <directionalLight position={[5, 5, 5]} intensity={theme === 'dark' ? 1.3 : 1.6} castShadow />
+                <pointLight position={[-2, 2, 2]} intensity={1} color={theme === 'dark' ? '#0066ff' : '#4b9bff'} />
+                <pointLight position={[2, 2, 2]} intensity={1} color={theme === 'dark' ? '#6600ff' : '#8b5cf6'} />
                 <Suspense fallback={<LoadingFallback theme={theme} />}>
                   <ErrorBoundary fallback={<LoadingFallback theme={theme} />}>
                     <AvatarModel isSpeaking={isSpeaking} theme={theme} />
@@ -1470,16 +1464,16 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
                 </Suspense>
               </Canvas>
             </div>
-            
-            <div className="w-full md:w-1/2 h-[350px] xs:h-[400px] sm:h-[500px] md:h-[500px] bg-gray-100/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-300/30 dark:border-gray-700/30 flex flex-col animate-glow">
-              <div className="bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 p-3 md:p-4 text-white dark:text-gray-100 flex justify-between items-center rounded-t-xl">
+
+            <div className="w-full md:w-1/2 h-[350px] sm:h-[400px] md:h-[500px] bg-gray-100/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-200/30 dark:border-gray-700/30 flex flex-col animate-glow">
+              <div className="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-800 p-3 sm:p-4 text-white flex justify-between items-center rounded-t-xl">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-white/20 dark:bg-gray-200/20 flex items-center justify-center">
                     <Bot size={20} />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-base md:text-lg">AI Assistant</h3>
-                    <p className="text-xs md:text-sm opacity-80">Connect with Muhammad Ahmad</p>
+                    <h3 className="font-semibold text-base sm:text-lg">AI Assistant</h3>
+                    <p className="text-xs sm:text-sm opacity-80">Connect with Muhammad Ahmad</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -1492,6 +1486,16 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
                     aria-label="Restart conversation"
                   >
                     <RefreshCw size={20} />
+                  </motion.button>
+                  <motion.button
+                    variants={buttonVariants}
+                    whileHover="hover"
+                    whileTap="tap"
+                    onClick={toggleSpeech}
+                    className="p-2 rounded-full hover:bg-white/20 dark:hover:bg-gray-200/20 transition-colors"
+                    aria-label={isSpeechPaused ? 'Resume speech' : 'Pause speech'}
+                  >
+                    {isSpeechPaused ? <Play size={20} /> : <Pause size={20} />}
                   </motion.button>
                   <motion.button
                     variants={buttonVariants}
@@ -1515,8 +1519,8 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
                   </motion.button>
                 </div>
               </div>
-              
-              <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-4 scrollbar-thin scrollbar-thumb-blue-500 dark:scrollbar-thumb-blue-600 scrollbar-track-gray-200 dark:scrollbar-track-gray-800">
+
+              <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4 scrollbar-thin scrollbar-thumb-blue-500 dark:scrollbar-thumb-blue-600 scrollbar-track-gray-200 dark:scrollbar-track-gray-800">
                 {messages.map((message) => (
                   <motion.div
                     key={message.id}
@@ -1526,20 +1530,20 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
                     className={`flex gap-3 ${message.isUser ? 'justify-end' : 'justify-start'}`}
                   >
                     {!message.isUser && (
-                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-700 rounded-full flex items-center justify-center">
-                        <Bot size={18} className="text-white dark:text-gray-100" />
+                      <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-800 rounded-full flex items-center justify-center">
+                        <Bot size={18} className="text-white" />
                       </div>
                     )}
                     <div
-                      className={`max-w-[80%] p-3 rounded-lg text-sm md:text-base ${
-                        message.isUser 
-                          ? 'bg-blue-500 dark:bg-blue-600 text-white dark:text-gray-100' 
+                      className={`max-w-[80%] sm:max-w-[70%] p-3 rounded-lg text-sm sm:text-base ${
+                        message.isUser
+                          ? 'bg-blue-600 dark:bg-blue-700 text-white'
                           : 'bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
                       } shadow-md`}
                     >
                       {message.text}
                       <div className="text-xs opacity-70 mt-1">
-                        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {message.timestamp.toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit', hour12: true })} PKT, {message.timestamp.toLocaleDateString('en-PK', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                       </div>
                     </div>
                     {message.isUser && (
@@ -1549,7 +1553,7 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
                     )}
                   </motion.div>
                 ))}
-                
+
                 {isTyping && (
                   <motion.div
                     variants={messageVariants}
@@ -1557,19 +1561,19 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
                     animate="animate"
                     className="flex gap-3 justify-start"
                   >
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-700 rounded-full flex items-center justify-center">
-                      <Bot size={18} className="text-white dark:text-gray-100" />
+                    <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-800 rounded-full flex items-center justify-center">
+                      <Bot size={18} className="text-white" />
                     </div>
                     <div className="bg-gray-200 dark:bg-gray-800 p-3 rounded-lg">
                       <div className="flex gap-1.5">
-                        <div className="w-2 h-2 bg-blue-400 dark:bg-blue-600 rounded-full animate-pulse" />
-                        <div className="w-2 h-2 bg-blue-400 dark:bg-blue-600 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
-                        <div className="w-2 h-2 bg-blue-400 dark:bg-blue-600 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
+                        <div className="w-2 h-2 bg-blue-500 dark:bg-blue-600 rounded-full animate-pulse" />
+                        <div className="w-2 h-2 bg-blue-500 dark:bg-blue-600 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
+                        <div className="w-2 h-2 bg-blue-500 dark:bg-blue-600 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
                       </div>
                     </div>
                   </motion.div>
                 )}
-                
+
                 {isSubmitting && (
                   <motion.div
                     variants={messageVariants}
@@ -1577,21 +1581,21 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
                     animate="animate"
                     className="flex gap-3 justify-start"
                   >
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-700 rounded-full flex items-center justify-center">
-                      <Bot size={18} className="text-white dark:text-gray-100" />
+                    <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-800 rounded-full flex items-center justify-center">
+                      <Bot size={18} className="text-white" />
                     </div>
                     <div className="bg-gray-200 dark:bg-gray-800 p-3 rounded-lg text-gray-900 dark:text-gray-100 flex items-center gap-3">
-                      <div className="w-5 h-5 border-2 border-blue-400 dark:border-blue-600 border-t-transparent rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-2 border-blue-500 dark:border-blue-600 border-t-transparent rounded-full animate-spin" />
                       Submitting...
                     </div>
                   </motion.div>
                 )}
-                
+
                 <div ref={messagesEndRef} />
               </div>
-              
-              <div className="p-3 md:p-4 border-t border-gray-300 dark:border-gray-700">
-                <div className="flex gap-3">
+
+              <div className="p-3 sm:p-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex gap-2 sm:gap-3">
                   <input
                     ref={inputRef}
                     type="text"
@@ -1619,7 +1623,7 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
                         ? 'Contact email...'
                         : 'Your project or hiring needs...'
                     }
-                    className="flex-1 bg-gray-200 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-sm md:text-base text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                    className="flex-1 bg-gray-200 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                     aria-label="Chat input"
                     disabled={isSubmitting}
                   />
@@ -1629,7 +1633,7 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
                     whileTap="tap"
                     onClick={handleSendMessage}
                     disabled={!inputText.trim() || isSubmitting}
-                    className="bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed text-white dark:text-gray-100 p-2 md:p-3 rounded-lg transition-colors"
+                    className="bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed text-white p-2 sm:p-3 rounded-lg transition-colors"
                     aria-label="Send message"
                   >
                     <Send size={20} />
@@ -1640,6 +1644,7 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
           </motion.div>
         )}
       </AnimatePresence>
+
       <style jsx global>{`
         .scrollbar-thin {
           scrollbar-width: thin;
@@ -1666,25 +1671,15 @@ const ChatBot = ({ theme: propTheme }: ChatBotProps) => {
           animation: glow 3s ease-in-out infinite;
         }
         @keyframes glow {
-          0%,
-          100% {
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-          }
-          50% {
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
-          }
+          0%, 100% { box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); }
+          50% { box-shadow: 0 0 20px rgba(0, 0, 0, 0.4); }
         }
         .dark .animate-glow {
           animation: glow-dark 3s ease-in-out infinite;
         }
         @keyframes glow-dark {
-          0%,
-          100% {
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-          }
-          50% {
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
-          }
+          0%, 100% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); }
+          50% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.4); }
         }
       `}</style>
     </>
