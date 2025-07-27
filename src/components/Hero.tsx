@@ -57,7 +57,7 @@ const Hero = () => {
 
   const downloadCV = () => {
     const link = document.createElement('a');
-    link.href = 'https://drive.google.com/file/d/1jwhKJaAo2_CNRPGPAAVfP_El6iSyMSuU/view?usp=sharing';
+    link.href = 'https://drive.google.com/file/d/1LEb7Scv_BQzuClhKMqYnNDqrOdwfnJI0/view?usp=sharing';
     link.download = 'Muhammad_Ahmad_CV.pdf';
     link.click();
   };
